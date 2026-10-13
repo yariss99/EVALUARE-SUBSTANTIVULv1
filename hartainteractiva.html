@@ -1,0 +1,1222 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Apartenența locală – Comuna Belcești</title>
+
+<style>
+:root{
+    --blue:#176b87;
+    --blue2:#dff3f7;
+    --green:#5d8b4a;
+    --gold:#e3a52d;
+    --red:#c95745;
+    --ink:#17324d;
+}
+
+*{box-sizing:border-box}
+
+body{
+    margin:0;
+    font-family:Arial,sans-serif;
+    background:#eef5f6;
+    color:var(--ink);
+}
+
+header{
+    background:linear-gradient(135deg,#155d77,#2389a5);
+    color:#fff;
+    padding:26px 18px;
+    text-align:center;
+}
+
+header h1{
+    margin:0;
+    font-size:34px;
+}
+
+header p{
+    font-size:19px;
+    margin:8px 0 0;
+}
+
+nav{
+    position:sticky;
+    top:0;
+    z-index:50;
+    background:#fff;
+    display:flex;
+    gap:8px;
+    justify-content:center;
+    flex-wrap:wrap;
+    padding:10px;
+    box-shadow:0 2px 10px #0002;
+}
+
+nav button{
+    border:0;
+    border-radius:18px;
+    padding:9px 14px;
+    background:var(--blue2);
+    color:var(--ink);
+    cursor:pointer;
+    font-weight:bold;
+}
+
+nav button.active{
+    background:var(--blue);
+    color:#fff;
+}
+
+main{
+    max-width:1200px;
+    margin:auto;
+    padding:20px;
+}
+
+section{
+    display:none;
+}
+
+.activeSection{
+    display:block;
+}
+
+.card{
+    background:#fff;
+    border-radius:20px;
+    padding:22px;
+    margin-bottom:18px;
+    box-shadow:0 4px 15px #0001;
+}
+
+h2{
+    color:var(--blue);
+    margin-top:0;
+}
+
+.lead{
+    font-size:20px;
+    line-height:1.5;
+}
+
+.factgrid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(190px,1fr));
+    gap:12px;
+}
+
+.fact{
+    background:#f4fbfc;
+    border:2px solid #cce8ee;
+    border-radius:15px;
+    padding:15px;
+    text-align:center;
+}
+
+.fact b{
+    display:block;
+    font-size:28px;
+    color:var(--blue);
+    margin-bottom:5px;
+}
+
+/* HARTA */
+
+.map{
+    position:relative;
+    height:620px;
+    background:#f8f3dc;
+    border:5px solid var(--blue);
+    border-radius:25px;
+    overflow:hidden;
+}
+
+.boundary{
+    position:absolute;
+    left:8%;
+    top:12%;
+    width:84%;
+    height:75%;
+    background:#fbf9e9;
+    border:5px solid var(--green);
+
+    clip-path:polygon(
+        7% 13%,
+        25% 5%,
+        45% 10%,
+        61% 4%,
+        82% 14%,
+        95% 32%,
+        91% 55%,
+        97% 74%,
+        78% 88%,
+        57% 94%,
+        36% 88%,
+        18% 95%,
+        5% 75%,
+        10% 53%,
+        3% 35%
+    );
+}
+
+.river{
+    position:absolute;
+    left:-10%;
+    top:55%;
+    width:120%;
+    height:22px;
+    background:#83cde0;
+    transform:rotate(-16deg);
+    border-radius:50%;
+    opacity:.85;
+}
+
+.mapTitle{
+    position:absolute;
+    top:18px;
+    left:50%;
+    transform:translateX(-50%);
+    background:#fff;
+    padding:9px 20px;
+    border-radius:25px;
+    border:3px solid var(--blue);
+    font-size:22px;
+    font-weight:bold;
+    z-index:3;
+}
+
+.village{
+    position:absolute;
+    transform:translate(-50%,-50%);
+    z-index:10;
+    text-align:center;
+    cursor:pointer;
+}
+
+.dot{
+    width:28px;
+    height:28px;
+    border-radius:50%;
+    background:var(--gold);
+    border:4px solid #fff;
+    box-shadow:0 2px 8px #0005;
+    margin:auto;
+    transition:.2s;
+}
+
+.village:hover .dot,
+.village.selected .dot{
+    transform:scale(1.35);
+    background:var(--red);
+}
+
+.village span{
+    display:block;
+    margin-top:5px;
+    background:#fff;
+    padding:5px 8px;
+    border-radius:9px;
+    font-weight:bold;
+    box-shadow:0 2px 6px #0002;
+    white-space:nowrap;
+}
+
+/* LOCALITĂȚI */
+
+.belcesti{left:50%;top:46%}
+.ciorani{left:28%;top:29%}
+.valeni{left:69%;top:25%}
+.rusi{left:76%;top:47%}
+.tansa{left:65%;top:70%}
+.satunou{left:43%;top:76%}
+.munteni{left:27%;top:62%}
+.ulmi{left:39%;top:27%}
+.liteni{left:79%;top:76%}
+
+.info{
+    display:none;
+    position:absolute;
+    z-index:30;
+    left:50%;
+    bottom:16px;
+    transform:translateX(-50%);
+    width:min(90%,650px);
+    background:#fff;
+    padding:16px;
+    border-radius:16px;
+    box-shadow:0 5px 20px #0003;
+    text-align:center;
+}
+
+.info.show{
+    display:block;
+}
+
+.info h3{
+    margin:0;
+    color:var(--blue);
+}
+
+/* EXERCIȚII */
+
+.choices{
+    display:grid;
+    grid-template-columns:
+        repeat(auto-fit,minmax(180px,1fr));
+    gap:10px;
+}
+
+.choice{
+    padding:13px;
+    border:2px solid #9fcbd4;
+    background:#f8fcfd;
+    border-radius:13px;
+    cursor:pointer;
+    font-size:17px;
+}
+
+.choice:hover{
+    background:#e4f5f8;
+}
+
+.choice.correct{
+    background:#dff3df;
+    border-color:#4e9654;
+}
+
+.choice.wrong{
+    background:#ffe3df;
+    border-color:#c95745;
+}
+
+.feedback{
+    text-align:center;
+    font-weight:bold;
+    min-height:28px;
+    margin:13px 0;
+}
+
+.source{
+    font-size:13px;
+    color:#5b6870;
+    border-top:1px solid #ddd;
+    margin-top:16px;
+    padding-top:10px;
+}
+
+textarea{
+    width:100%;
+    min-height:90px;
+    border:2px solid #c9dfe4;
+    border-radius:12px;
+    padding:12px;
+    font:inherit;
+}
+
+.score{
+    position:fixed;
+    right:18px;
+    bottom:18px;
+    background:var(--blue);
+    color:#fff;
+    padding:10px 15px;
+    border-radius:20px;
+    font-weight:bold;
+    z-index:100;
+}
+
+footer{
+    text-align:center;
+    padding:25px;
+    color:#667;
+}
+
+@media(max-width:700px){
+    header h1{
+        font-size:27px;
+    }
+
+    .map{
+        height:560px;
+    }
+
+    .village span{
+        font-size:12px;
+    }
+
+    .dot{
+        width:23px;
+        height:23px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <h1>Descopăr locul căruia îi aparțin</h1>
+    <p>
+        <strong>Apartenența locală</strong> –
+        Comuna Belcești, județul Iași
+    </p>
+</header>
+
+<nav>
+    <button class="active"
+        onclick="showSection('start',this)">
+        1. Mă localizez
+    </button>
+
+    <button onclick="showSection('mapa',this)">
+        2. Harta mea
+    </button>
+
+    <button onclick="showSection('concept',this)">
+        3. Ce înseamnă apartenența?
+    </button>
+
+    <button onclick="showSection('cunosc',this)">
+        4. Cunosc comuna
+    </button>
+
+    <button onclick="showSection('istorie',this)">
+        5. Descopăr trecutul
+    </button>
+
+    <button onclick="showSection('test',this)">
+        6. Mă verific
+    </button>
+</nav>
+
+<main>
+
+<section id="start" class="activeSection">
+
+<div class="card">
+
+<h2>De unde începem?</h2>
+
+<p class="lead">
+Un loc nu este doar un punct pe hartă.
+El este spațiul în care oamenii trăiesc,
+învață, muncesc, se întâlnesc și construiesc
+o comunitate.
+</p>
+
+<p class="lead">
+Completează traseul:
+<strong>
+eu → localitatea mea → comuna mea → județul meu → țara mea
+</strong>.
+</p>
+
+<div class="factgrid">
+
+<div class="fact">
+<b>Belcești</b>
+comună din județul Iași
+</div>
+
+<div class="fact">
+<b>10388 ha</b>
+suprafață menționată pe site-ul oficial
+</div>
+
+<div class="fact">
+<b>1579</b>
+atestare documentară a comunei
+</div>
+
+<div class="fact">
+<b>Bahlui</b>
+râu care traversează comuna
+</div>
+
+</div>
+
+<p class="source">
+Datele provin din prezentarea oficială a comunei Belcești.
+</p>
+
+</div>
+
+<div class="card">
+
+<h2>
+Construiește-ți propria apartenență
+</h2>
+
+<p>
+În ce județ se află comuna Belcești?
+</p>
+
+<div class="choices">
+
+<button class="choice"
+onclick="check(this,true)">
+Vaslui
+</button>
+
+<button class="choice"
+onclick="check(this,false)">
+Iași
+</button>
+
+<button class="choice"
+onclick="check(this,false)">
+Botoșani
+</button>
+
+<button class="choice"
+onclick="check(this,false)">
+Neamț
+</button>
+
+</div>
+
+<div class="feedback"></div>
+
+</div>
+
+</section>
+
+
+<section id="mapa">
+
+<div class="card">
+
+<h2>
+Harta interactivă a comunei Belcești
+</h2>
+
+<p>
+Apasă pe localități și descoperă informațiile despre
+comună.
+</p>
+
+<div class="map">
+
+<div class="boundary"></div>
+
+<div class="river"></div>
+
+<div class="mapTitle">
+COMUNA BELCEȘTI
+</div>
+
+<div class="village belcesti"
+onclick="village(
+'Belcești',
+'Denumirea comunei. Documentația oficială precizează că niciun sat nu poartă oficial numele Belcești.',
+'belcesti'
+)">
+<div class="dot"></div>
+<span>Belcești</span>
+</div>
+
+<div class="village ciorani"
+onclick="village(
+'Ciorăni',
+'Ciorăni formează, împreună cu Văleni și Ruși, centrul comunei.',
+'ciorani'
+)">
+<div class="dot"></div>
+<span>Ciorăni</span>
+</div>
+
+<div class="village valeni"
+onclick="village(
+'Văleni',
+'Văleni formează, împreună cu Ciorăni și Ruși, centrul comunei.',
+'valeni'
+)">
+<div class="dot"></div>
+<span>Văleni</span>
+</div>
+
+<div class="village rusi"
+onclick="village(
+'Ruși',
+'Ruși formează, împreună cu Ciorăni și Văleni, centrul comunei.',
+'rusi'
+)">
+<div class="dot"></div>
+<span>Ruși</span>
+</div>
+
+<div class="village tansa"
+onclick="village(
+'Tansa',
+'Tansa este unul dintre satele comunei Belcești.',
+'tansa'
+)">
+<div class="dot"></div>
+<span>Tansa</span>
+</div>
+
+<div class="village satunou"
+onclick="village(
+'Satu Nou',
+'Satu Nou este unul dintre satele comunei Belcești.',
+'satunou'
+)">
+<div class="dot"></div>
+<span>Satu Nou</span>
+</div>
+
+<div class="village munteni"
+onclick="village(
+'Munteni',
+'Munteni este unul dintre satele comunei Belcești.',
+'munteni'
+)">
+<div class="dot"></div>
+<span>Munteni</span>
+</div>
+
+<div class="village ulmi"
+onclick="village(
+'Ulmi',
+'Ulmi este una dintre localitățile istorice ale comunei și este menționat documentar în legătură cu anul 1437.',
+'ulmi'
+)">
+<div class="dot"></div>
+<span>Ulmi</span>
+</div>
+
+<div class="village liteni"
+onclick="village(
+'Liteni',
+'Liteni este unul dintre satele comunei Belcești.',
+'liteni'
+)">
+<div class="dot"></div>
+<span>Liteni</span>
+</div>
+
+<div id="mapInfo" class="info">
+
+<h3 id="mapTitle"></h3>
+
+<p id="mapText"></p>
+
+<button onclick="
+document.getElementById('mapInfo')
+.classList.remove('show')
+">
+Închide
+</button>
+
+</div>
+
+</div>
+
+<p class="small">
+Harta este o reprezentare didactică schematică,
+nu o hartă cadastrală/GIS.
+</p>
+
+</div>
+
+
+<div class="card">
+
+<h2>
+Provocarea hărții
+</h2>
+
+<p>
+Care dintre următoarele sunt sate ale comunei Belcești?
+</p>
+
+<div class="choices">
+
+<button class="choice"
+onclick="check(this,true)">
+Ciorăni
+</button>
+
+<button class="choice"
+onclick="check(this,false)">
+Iași
+</button>
+
+<button class="choice"
+onclick="check(this,true)">
+Tansa
+</button>
+
+<button class="choice"
+onclick="check(this,false)">
+Vaslui
+</button>
+
+</div>
+
+<div class="feedback"></div>
+
+</div>
+
+</section>
+
+
+<section id="concept">
+
+<div class="card">
+
+<h2>
+Ce înseamnă APARTENENȚA?
+</h2>
+
+<p class="lead">
+A aparține unui loc înseamnă, în această lecție,
+că o localitate este inclusă într-o unitate
+administrativă mai mare.
+</p>
+
+<div class="card">
+
+<p>
+<strong>Exemplu:</strong>
+</p>
+
+<p class="lead">
+Tansa → comuna Belcești → județul Iași → România
+</p>
+
+<p>
+Observă sensul săgeților:
+<strong>
+Tansa aparține comunei Belcești.
+</strong>
+</p>
+
+</div>
+
+<div class="card">
+
+<p>
+Dacă locuiești în Tansa, care este traseul corect?
+</p>
+
+<div class="choices">
+
+<button class="choice"
+onclick="check(this,true)">
+Tansa → Belcești → Iași → România
+</button>
+
+<button class="choice"
+onclick="check(this,false)">
+Tansa → România → Belcești → Iași
+</button>
+
+<button class="choice"
+onclick="check(this,false)">
+Iași → Belcești → Tansa → România
+</button>
+
+</div>
+
+<div class="feedback"></div>
+
+</div>
+
+<div class="card">
+
+<p>
+Care afirmație NU exprimă corect o relație de apartenență?
+</p>
+
+<div class="choices">
+
+<button class="choice"
+onclick="check(this,false)">
+Tansa face parte din comuna Belcești.
+</button>
+
+<button class="choice"
+onclick="check(this,false)">
+Comuna Belcești face parte din județul Iași.
+</button>
+
+<button class="choice"
+onclick="check(this,true)">
+Județul Iași face parte din comuna Belcești.
+</button>
+
+</div>
+
+<div class="feedback"></div>
+
+</div>
+
+</div>
+
+</section>
+
+
+<section id="cunosc">
+
+<div class="card">
+
+<h2>
+Îmi cunosc comuna
+</h2>
+
+<div class="card">
+
+<p>
+<strong>Ce râu traversează comuna Belcești?</strong>
+</p>
+
+<div class="choices">
+
+<button class="choice"
+onclick="check(this,true)">
+Bahlui
+</button>
+
+<button class="choice"
+onclick="check(this,false)">
+Olt
+</button>
+
+<button class="choice"
+onclick="check(this,false)">
+Prut
+</button>
+
+<button class="choice"
+onclick="check(this,false)">
+Siret
+</button>
+
+</div>
+
+<div class="feedback"></div>
+
+</div>
+
+
+<div class="card">
+
+<p>
+<strong>
+Ce obiectiv local este menționat în sursele oficiale?
+</strong>
+</p>
+
+<div class="choices">
+
+<button class="choice"
+onclick="check(this,true)">
+Muzeul-Memorial Ulmi-Poleni
+</button>
+
+<button class="choice"
+onclick="check(this,false)">
+Castelul Belcești
+</button>
+
+<button class="choice"
+onclick="check(this,false)">
+Cetatea Belcești
+</button>
+
+</div>
+
+<div class="feedback"></div>
+
+</div>
+
+
+<div class="card">
+
+<h2>
+Eu cunosc locul în care trăiesc
+</h2>
+
+<p>
+Care este satul în care locuiești?
+</p>
+
+<textarea
+placeholder="Scrie aici...">
+</textarea>
+
+<p>
+Scrie un loc important din comuna Belcești
+pe care îl cunoști.
+</p>
+
+<textarea
+placeholder="Scrie aici...">
+</textarea>
+
+</div>
+
+</div>
+
+</section>
+
+
+<section id="istorie">
+
+<div class="card">
+
+<h2>
+Descopăr trecutul locului meu
+</h2>
+
+<div class="factgrid">
+
+<div class="fact">
+
+<b>1437</b>
+
+Ulmi este menționat documentar
+în legătură cu acest an.
+
+</div>
+
+<div class="fact">
+
+<b>1579</b>
+
+Belcești este atestată documentar.
+
+</div>
+
+<div class="fact">
+
+<b>1865</b>
+
+La Belcești este înființată
+o școală de stat.
+
+</div>
+
+<div class="fact">
+
+<b>1875</b>
+
+Școala rurală de la Polieni
+este menționată în scrierile
+pedagogice ale lui Mihai Eminescu.
+
+</div>
+
+</div>
+
+<p class="source">
+
+Informațiile istorice sunt bazate pe
+Monografia comunei și pagina oficială
+„Istoric” a Comunei Belcești.
+
+</p>
+
+</div>
+
+
+<div class="card">
+
+<h2>
+Găsește afirmația corectă
+</h2>
+
+<p>
+În ce an este atestată documentar comuna Belcești?
+</p>
+
+<div class="choices">
+
+<button class="choice"
+onclick="check(this,false)">
+1437
+</button>
+
+<button class="choice"
+onclick="check(this,true)">
+1579
+</button>
+
+<button class="choice"
+onclick="check(this,false)">
+1865
+</button>
+
+<button class="choice"
+onclick="check(this,false)">
+1875
+</button>
+
+</div>
+
+<div class="feedback"></div>
+
+</div>
+
+</section>
+
+
+<section id="test">
+
+<div class="card">
+
+<h2>
+Mă verific
+</h2>
+
+<p>
+Demonstrează că ai înțeles noțiunea de apartenență.
+</p>
+
+<div class="card">
+
+<p>
+<strong>
+Care este diferența dintre sat și comună?
+</strong>
+</p>
+
+<div class="choices">
+
+<button class="choice"
+onclick="check(this,false)">
+Satul este mai mare decât comuna.
+</button>
+
+<button class="choice"
+onclick="check(this,true)">
+O comună poate cuprinde mai multe sate.
+</button>
+
+<button class="choice"
+onclick="check(this,false)">
+Comuna este un județ.
+</button>
+
+</div>
+
+<div class="feedback"></div>
+
+</div>
+
+
+<div class="card">
+
+<p>
+<strong>
+Dacă locuiești în Ruși, care afirmație este corectă?
+</strong>
+</p>
+
+<div class="choices">
+
+<button class="choice"
+onclick="check(this,true)">
+Ruși aparține comunei Belcești.
+</button>
+
+<button class="choice"
+onclick="check(this,false)">
+Ruși este județul Iași.
+</button>
+
+<button class="choice"
+onclick="check(this,false)">
+Belcești aparține satului Ruși.
+</button>
+
+</div>
+
+<div class="feedback"></div>
+
+</div>
+
+
+<div class="card">
+
+<p>
+<strong>
+Care lanț este corect?
+</strong>
+</p>
+
+<div class="choices">
+
+<button class="choice"
+onclick="check(this,true)">
+Sat → comună → județ → țară
+</button>
+
+<button class="choice"
+onclick="check(this,false)">
+Țară → sat → județ → comună
+</button>
+
+<button class="choice"
+onclick="check(this,false)">
+Județ → țară → sat → comună
+</button>
+
+</div>
+
+<div class="feedback"></div>
+
+</div>
+
+</div>
+
+
+<div class="card">
+
+<h2>
+Reflecție finală
+</h2>
+
+<p class="lead">
+<strong>
+„Eu aparțin comunității mele pentru că...”
+</strong>
+</p>
+
+<textarea
+placeholder="Scrie răspunsul tău aici...">
+</textarea>
+
+</div>
+
+</section>
+
+</main>
+
+
+<div class="score">
+Scor:
+<span id="score">0</span>
+</div>
+
+
+<footer>
+Material didactic interactiv –
+Apartenența locală –
+Comuna Belcești, județul Iași
+</footer>
+
+
+<script>
+
+let score = 0;
+
+function addScore(){
+
+    score++;
+
+    document.getElementById("score")
+    .textContent = score;
+
+}
+
+function check(button,correct){
+
+    const parent =
+        button.parentElement;
+
+    const feedback =
+        parent.nextElementSibling;
+
+    if(parent.dataset.done){
+        return;
+    }
+
+    parent.dataset.done = "true";
+
+    if(correct){
+
+        button.classList.add("correct");
+
+        feedback.textContent =
+            "Corect! Ai identificat relația potrivită.";
+
+        feedback.style.color =
+            "#2d7a38";
+
+        addScore();
+
+    }else{
+
+        button.classList.add("wrong");
+
+        feedback.textContent =
+            "Mai gândește-te la relația dintre sat, comună și județ.";
+
+        feedback.style.color =
+            "#b33d30";
+
+    }
+
+}
+
+function village(name,text,cls){
+
+    document
+    .querySelectorAll(".village")
+    .forEach(v =>
+        v.classList.remove("selected")
+    );
+
+    document
+    .querySelector("." + cls)
+    .classList.add("selected");
+
+    document
+    .getElementById("mapTitle")
+    .textContent = name;
+
+    document
+    .getElementById("mapText")
+    .textContent = text;
+
+    document
+    .getElementById("mapInfo")
+    .classList.add("show");
+
+}
+
+function showSection(id,button){
+
+    document
+    .querySelectorAll("main section")
+    .forEach(section =>
+        section.classList.remove("activeSection")
+    );
+
+    document
+    .getElementById(id)
+    .classList.add("activeSection");
+
+    document
+    .querySelectorAll("nav button")
+    .forEach(btn =>
+        btn.classList.remove("active")
+    );
+
+    button.classList.add("active");
+
+    window.scrollTo({
+        top:0,
+        behavior:"smooth"
+    });
+
+}
+
+</script>
+
+</body>
+</html>
